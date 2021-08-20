@@ -1,0 +1,85 @@
+#!/usr/bin/env python
+# coding: utf-8
+
+# In[1]:
+
+
+import pandas as pd
+import pyodbc
+
+
+
+# In[2]:
+
+#pyodbc.drivers()
+
+
+# In[3]:
+
+# Connect to SQL Server
+
+conn = pyodbc.connect(
+        Trusted_Connection='Yes',
+        Driver='{ODBC Driver 17 for SQL Server}',
+        Server='SOURABH-PC',
+        Database="SalesJan2009"
+        )
+cursor = conn.cursor()
+
+
+# In[4]:
+
+#Import CSV
+df = pd.read_csv(r"D:\SalesRecords.csv")
+
+
+# In[5]:
+
+
+df.head()
+
+
+# In[6]:
+
+
+df.columns
+
+
+# In[7]:
+
+# Create Table
+cursor.execute("CREATE TABLE SalesRecordInfo(Region nvarchar(50), Country nvarchar(50), Item_Type nvarchar(50), Sales_Channel nvarchar(10), Order_Priority nvarchar(10),Order_Date nvarchar(30), Order_ID int NOT NULL Primary Key,  Ship_Date nvarchar(30), Units_Sold int, Unit_Price float, Unit_Cost float,Total_Revenue float, Total_Cost float, Total_Profit float)")
+
+
+# In[8]:
+
+#Insert DataFrame to Table
+for row in df.itertuples():
+    try:
+           cursor.execute('''
+                        INSERT INTO SalesJan2009.dbo.SalesRecordInfo(Region, Country, Item_Type, Sales_Channel, Order_Priority, Order_Date, Order_ID, Ship_Date, Units_Sold, Unit_Price, Unit_Cost,Total_Revenue, Total_Cost, Total_Profit)
+                        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+                        ''',
+                        row.Region,
+                        row.Country,
+                        row.Item_Type,   
+                        row.Sales_Channel,
+                        row.Order_Priority,
+                        row.Order_Date,
+                        row.Order_ID,  
+                        row.Ship_Date,   
+                        row.Units_Sold,
+                        row.Unit_Price,
+                        row.Unit_Cost,
+                        row.Total_Revenue,   
+                        row.Total_Cost,
+                        row.Total_Profit  
+                        )
+    except sql.IntegrityError:
+        print("Order Id is Already Available")
+        
+conn.commit()
+
+
+
+
